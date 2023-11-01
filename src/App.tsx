@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import './App.css'
 
+import './App.css'
+import React, { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
 
 interface BloodPressureMeasurement {
   systolic: number;
@@ -16,6 +17,42 @@ const BloodPressureTracker: React.FC = () => {
     pulse: 0,
   });
   const [formErrors, setFormErrors] = useState<Partial<BloodPressureMeasurement>>({});
+  const [chartData, setChartData] = useState<{ labels: string[]; datasets: any[] }>({
+    labels: [],
+    datasets: [],
+  });
+
+  useEffect(() => {
+    // Update the chart data whenever measurements change
+    const labels: string[] = measurements.map((_, index) => `Measurement ${index + 1}`);
+    const systolicData: number[] = measurements.map((measurement) => measurement.systolic);
+    const diastolicData: number[] = measurements.map((measurement) => measurement.diastolic);
+    const pulseData: number[] = measurements.map((measurement) => measurement.pulse);
+
+    setChartData({
+      labels,
+      datasets: [
+        {
+          label: 'Systolic Pressure (mmHg)',
+          borderColor: 'rgb(255, 99, 132)',
+          data: systolicData,
+          fill: false,
+        },
+        {
+          label: 'Diastolic Pressure (mmHg)',
+          borderColor: 'rgb(75, 192, 192)',
+          data: diastolicData,
+          fill: false,
+        },
+        {
+          label: 'Pulse (bpm)',
+          borderColor: 'rgb(54, 162, 235)',
+          data: pulseData,
+          fill: false,
+        },
+      ],
+    });
+  }, [measurements]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -106,11 +143,16 @@ const BloodPressureTracker: React.FC = () => {
           ))}
         </ul>
       </div>
+      <div>
+        <h3>Blood Pressure Chart</h3>
+        <Line data={chartData} />
+      </div>
     </div>
   );
 };
 
 export default BloodPressureTracker;
+
 
 
 
