@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css'
 
+
 interface BloodPressureMeasurement {
   systolic: number;
   diastolic: number;
@@ -14,6 +15,7 @@ const BloodPressureTracker: React.FC = () => {
     diastolic: 0,
     pulse: 0,
   });
+  const [formErrors, setFormErrors] = useState<Partial<BloodPressureMeasurement>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,15 +23,39 @@ const BloodPressureTracker: React.FC = () => {
       ...currentMeasurement,
       [name]: Number(value),
     });
+    // Clear the error for the input field when the user starts typing
+    setFormErrors({
+      ...formErrors,
+      [name]: undefined,
+    });
+  };
+
+  const validateForm = () => {
+    const errors: Partial<BloodPressureMeasurement> = {};
+    if (currentMeasurement.systolic === 0) {
+      errors.systolic = 'Systolic pressure is required';
+    }
+    if (currentMeasurement.diastolic === 0) {
+      errors.diastolic = 'Diastolic pressure is required';
+    }
+    if (currentMeasurement.pulse === 0) {
+      errors.pulse = 'Pulse is required';
+    }
+    return errors;
   };
 
   const handleSaveMeasurement = () => {
-    setMeasurements([...measurements, currentMeasurement]);
-    setCurrentMeasurement({
-      systolic: 0,
-      diastolic: 0,
-      pulse: 0,
-    });
+    const errors = validateForm();
+    if (Object.keys(errors).length === 0) {
+      setMeasurements([...measurements, currentMeasurement]);
+      setCurrentMeasurement({
+        systolic: 0,
+        diastolic: 0,
+        pulse: 0,
+      });
+    } else {
+      setFormErrors(errors);
+    }
   };
 
   return (
@@ -44,6 +70,7 @@ const BloodPressureTracker: React.FC = () => {
             value={currentMeasurement.systolic}
             onChange={handleInputChange}
           />
+          {formErrors.systolic && <div className="error">{formErrors.systolic}</div>}
         </div>
         <div>
           <label>Diastolic Pressure (mmHg):</label>
@@ -53,6 +80,7 @@ const BloodPressureTracker: React.FC = () => {
             value={currentMeasurement.diastolic}
             onChange={handleInputChange}
           />
+          {formErrors.diastolic && <div className="error">{formErrors.diastolic}</div>}
         </div>
         <div>
           <label>Pulse (bpm):</label>
@@ -62,6 +90,7 @@ const BloodPressureTracker: React.FC = () => {
             value={currentMeasurement.pulse}
             onChange={handleInputChange}
           />
+          {formErrors.pulse && <div className="error">{formErrors.pulse}</div>}
         </div>
         <button type="button" onClick={handleSaveMeasurement}>
           Save Measurement
@@ -82,6 +111,7 @@ const BloodPressureTracker: React.FC = () => {
 };
 
 export default BloodPressureTracker;
+
 
 
 
